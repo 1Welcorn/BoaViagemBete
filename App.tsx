@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { generateEventPhrases, generateSpeech, playAudioBuffer, preloadAudioBatch, stopAudio, initializeAudio, playNativeSpeech, hasValidKey } from './services/gemini';
+import { generateEventPhrases, generateSpeech, playAudioBuffer, preloadAudioBatch, stopAudio, initializeAudio, playNativeSpeech, hasValidKey, setManualKey } from './services/gemini';
 import { Phrase, AppMode, AppSettings } from './types';
 import { SparklesIcon, CardsIcon, EarIcon, MicIcon, CheckCircleIcon, XCircleIcon, RefreshIcon, PuzzleIcon, CogIcon, GridIcon, PencilIcon, LinkIcon } from './components/Icons';
 
@@ -81,6 +81,10 @@ R. Amen.
 R. Amém.`;
 
 export default function App() {
+  // Use state to track key validity so we can update it at runtime
+  const [isKeyConfigured, setIsKeyConfigured] = useState(hasValidKey);
+  const [manualKeyInput, setManualKeyInput] = useState('');
+  
   const [mode, setMode] = useState<AppMode>(AppMode.SETUP);
   const [topic, setTopic] = useState('Wedding Ceremony Prayers');
   const [level, setLevel] = useState('Intermediate');
@@ -98,28 +102,55 @@ export default function App() {
   // Stats for the session
   const [completedActivities, setCompletedActivities] = useState<number>(0);
 
-  // Check for API Configuration on Mount
-  if (!hasValidKey) {
+  // --- MANUAL KEY HANDLER ---
+  const handleManualKeySubmit = () => {
+    if (manualKeyInput.length > 10) {
+      setManualKey(manualKeyInput);
+      setIsKeyConfigured(true);
+    } else {
+      alert("Por favor, insira uma chave API válida.");
+    }
+  };
+
+  // Check for API Configuration
+  if (!isKeyConfigured) {
      return (
-        <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 text-center">
+        <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 text-center font-sans">
             <div className="w-24 h-24 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-6 border-2 border-red-500/50">
                <XCircleIcon className="w-12 h-12" />
             </div>
             <h1 className="text-2xl font-bold mb-4 font-serif">Configuração Necessária (Vercel)</h1>
             <p className="max-w-md text-slate-300 mb-8 leading-relaxed">
-               A chave da API não foi detectada. O Vercel esconde chaves que não começam com <code>VITE_</code> ou <code>REACT_APP_</code> por segurança.
+               A chave da API não foi detectada automaticamente.
             </p>
             
-            <div className="bg-slate-800 p-6 rounded-lg text-left max-w-lg w-full border border-slate-700 shadow-xl">
-               <h3 className="font-bold text-amber-400 mb-3 uppercase text-xs tracking-wider">Passo a Passo para Corrigir</h3>
-               <ol className="list-decimal list-inside space-y-3 text-sm text-slate-300">
-                  <li>Vá para o painel do seu projeto no <strong>Vercel</strong>.</li>
-                  <li>Clique em <strong>Settings</strong> &gt; <strong>Environment Variables</strong>.</li>
-                  <li><strong>Adicione (ou edite) a variável com este nome EXATO:</strong></li>
-                  <li className="pl-4 py-1"><code className="bg-slate-950 px-2 py-1 rounded text-green-400 font-mono">VITE_API_KEY</code></li>
-                  <li className="pl-4 text-xs text-slate-400">(Atenção: Não use apenas API_KEY)</li>
-                  <li>Cole sua chave do Google Gemini no valor.</li>
-                  <li>Salve e vá em <strong>Deployments</strong> &gt; <strong>Redeploy</strong>.</li>
+            {/* MANUAL ENTRY CARD */}
+            <div className="bg-slate-800 p-6 rounded-xl text-left max-w-lg w-full border border-slate-700 shadow-xl mb-6">
+                <h3 className="font-bold text-amber-400 mb-4 uppercase text-xs tracking-wider">Entrada Manual (Rápido)</h3>
+                <p className="text-sm text-slate-400 mb-3">Cole sua chave API do Google Gemini abaixo para começar imediatamente:</p>
+                <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      value={manualKeyInput}
+                      onChange={(e) => setManualKeyInput(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="flex-1 bg-slate-900 border border-slate-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <button 
+                      onClick={handleManualKeySubmit}
+                      className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-6 py-2 rounded-lg transition-colors"
+                    >
+                        Entrar
+                    </button>
+                </div>
+            </div>
+
+            <div className="max-w-lg w-full text-left">
+               <h3 className="font-bold text-slate-500 mb-3 uppercase text-xs tracking-wider">Ou Configure no Vercel (Permanente)</h3>
+               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-400">
+                  <li>Vá para <strong>Settings</strong> &gt; <strong>Environment Variables</strong> no Vercel.</li>
+                  <li>Nomeie a variável como: <code className="bg-slate-800 px-1 py-0.5 rounded text-green-400 font-mono">VITE_API_KEY</code></li>
+                  <li>Redeploy o projeto.</li>
                </ol>
             </div>
         </div>

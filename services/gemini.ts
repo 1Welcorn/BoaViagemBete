@@ -23,12 +23,23 @@ const getApiKey = () => {
   return "";
 };
 
-const apiKey = getApiKey();
-// We allow initialization with a dummy key to prevent immediate crash, 
-// but we will flag it so the UI can warn the user.
-export const hasValidKey = !!apiKey && !apiKey.includes('dummy');
+let apiKey = getApiKey();
+// We allow initialization with a dummy key to prevent immediate crash.
+// We use a mutable variable here so we can update it at runtime.
+export let hasValidKey = !!apiKey && !apiKey.includes('dummy');
 
-const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-for-init' });
+let ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-for-init' });
+
+/**
+ * Allows the UI to inject a key manually at runtime, bypassing environment variables.
+ */
+export const setManualKey = (key: string) => {
+    if (!key) return;
+    apiKey = key;
+    hasValidKey = true;
+    // Re-initialize the AI instance with the new key
+    ai = new GoogleGenAI({ apiKey: key });
+};
 
 // --- AUDIO SYSTEM ---
 
@@ -64,7 +75,7 @@ export const initializeAudio = () => {
  */
 export const generateEventPhrases = async (topic: string, level: string, sourceText?: string): Promise<Phrase[]> => {
   if (!hasValidKey) {
-      throw new Error("API Key is missing. Please configure Vercel Environment Variables.");
+      throw new Error("API Key is missing. Please configure Vercel Environment Variables or enter key manually.");
   }
 
   try {
