@@ -2,16 +2,23 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { Phrase } from "../types";
 
 // --- API KEY SAFE ACCESS ---
-// We use a safe getter to prevent "ReferenceError: process is not defined" 
-// which causes white screens in pure browser environments.
 const getApiKey = () => {
   try {
-    // Check if process exists (Node/Build env) and has the key
-    if (typeof process !== "undefined" && process.env && process.env.API_KEY) {
-      return process.env.API_KEY;
+    // 1. Vite (Most common for Vercel React deployments)
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+    
+    // 2. Create React App / Webpack
+    if (typeof process !== "undefined" && process.env) {
+      if (process.env.REACT_APP_API_KEY) return process.env.REACT_APP_API_KEY;
+      if (process.env.NEXT_PUBLIC_API_KEY) return process.env.NEXT_PUBLIC_API_KEY;
+      if (process.env.API_KEY) return process.env.API_KEY; // Fallback
     }
   } catch (e) {
-    // Ignore errors if process is not defined
+    // Ignore errors
   }
   return "";
 };

@@ -105,20 +105,21 @@ export default function App() {
             <div className="w-24 h-24 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-6 border-2 border-red-500/50">
                <XCircleIcon className="w-12 h-12" />
             </div>
-            <h1 className="text-2xl font-bold mb-4 font-serif">Configuração Necessária</h1>
+            <h1 className="text-2xl font-bold mb-4 font-serif">Configuração Necessária (Vercel)</h1>
             <p className="max-w-md text-slate-300 mb-8 leading-relaxed">
-               O aplicativo não detectou uma chave de API válida. Para usar a Inteligência Artificial, você precisa configurar a chave no Vercel.
+               A chave da API não foi detectada. O Vercel esconde chaves que não começam com <code>VITE_</code> ou <code>REACT_APP_</code> por segurança.
             </p>
             
             <div className="bg-slate-800 p-6 rounded-lg text-left max-w-lg w-full border border-slate-700 shadow-xl">
-               <h3 className="font-bold text-amber-400 mb-3 uppercase text-xs tracking-wider">Como resolver (Vercel)</h3>
-               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-300">
+               <h3 className="font-bold text-amber-400 mb-3 uppercase text-xs tracking-wider">Passo a Passo para Corrigir</h3>
+               <ol className="list-decimal list-inside space-y-3 text-sm text-slate-300">
                   <li>Vá para o painel do seu projeto no <strong>Vercel</strong>.</li>
                   <li>Clique em <strong>Settings</strong> &gt; <strong>Environment Variables</strong>.</li>
-                  <li>Adicione uma nova variável:</li>
-                  <li className="pl-4 py-1">Key: <code className="bg-slate-950 px-2 py-0.5 rounded text-green-400">API_KEY</code></li>
-                  <li className="pl-4 py-1">Value: <em>(Sua chave da API do Google Gemini)</em></li>
-                  <li>Salve e faça um <strong>Redeploy</strong> do projeto.</li>
+                  <li><strong>Adicione (ou edite) a variável com este nome EXATO:</strong></li>
+                  <li className="pl-4 py-1"><code className="bg-slate-950 px-2 py-1 rounded text-green-400 font-mono">VITE_API_KEY</code></li>
+                  <li className="pl-4 text-xs text-slate-400">(Atenção: Não use apenas API_KEY)</li>
+                  <li>Cole sua chave do Google Gemini no valor.</li>
+                  <li>Salve e vá em <strong>Deployments</strong> &gt; <strong>Redeploy</strong>.</li>
                </ol>
             </div>
         </div>
