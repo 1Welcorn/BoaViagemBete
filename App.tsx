@@ -17,7 +17,7 @@ const Header = ({ title, onBack, onSettings }: { title: string, onBack?: () => v
         </button>
       )}
       <div className="flex flex-col overflow-hidden">
-        <h1 className="text-lg md:text-xl font-serif font-bold text-white tracking-wide truncate max-w-[200px] sm:max-w-md">{title}</h1>
+        <h1 className="text-lg md:text-xl font-serif font-bold text-white tracking-wide truncate max-w-[200px] md:max-w-none">{title}</h1>
         <div className="flex items-center gap-1.5 opacity-80">
             <span className="text-[10px] uppercase tracking-widest text-amber-400 font-semibold truncate">American Wedding Prep</span>
             {/* Small subtle US Flag representation */}
@@ -1383,7 +1383,26 @@ const PuzzleActivity = ({ phrases, settings, onFinish }: { phrases: Phrase[], se
   };
 
   const playSuccessSound = () => {
-    // Simple synthesized beep for success if needed, or just rely on visual
+    // Simple Web Audio Beep
+    try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1); // C6
+        
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+    } catch(e) {
+        console.log("Audio play error", e);
+    }
   };
 
   const next = () => {
@@ -1861,4 +1880,3 @@ const SpeakingActivity = ({ phrases, settings, onFinish }: { phrases: Phrase[], 
       </div>
     );
 };
-    
