@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { generateEventPhrases, generateSpeech, playAudioBuffer, preloadAudioBatch, stopAudio, initializeAudio, playNativeSpeech } from './services/gemini';
+import { generateEventPhrases, generateSpeech, playAudioBuffer, preloadAudioBatch, stopAudio, initializeAudio, playNativeSpeech, hasValidKey } from './services/gemini';
 import { Phrase, AppMode, AppSettings } from './types';
 import { SparklesIcon, CardsIcon, EarIcon, MicIcon, CheckCircleIcon, XCircleIcon, RefreshIcon, PuzzleIcon, CogIcon, GridIcon, PencilIcon, LinkIcon } from './components/Icons';
 
@@ -99,6 +98,33 @@ export default function App() {
   // Stats for the session
   const [completedActivities, setCompletedActivities] = useState<number>(0);
 
+  // Check for API Configuration on Mount
+  if (!hasValidKey) {
+     return (
+        <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-24 h-24 bg-red-500/20 text-red-400 rounded-full flex items-center justify-center mb-6 border-2 border-red-500/50">
+               <XCircleIcon className="w-12 h-12" />
+            </div>
+            <h1 className="text-2xl font-bold mb-4 font-serif">Configuração Necessária</h1>
+            <p className="max-w-md text-slate-300 mb-8 leading-relaxed">
+               O aplicativo não detectou uma chave de API válida. Para usar a Inteligência Artificial, você precisa configurar a chave no Vercel.
+            </p>
+            
+            <div className="bg-slate-800 p-6 rounded-lg text-left max-w-lg w-full border border-slate-700 shadow-xl">
+               <h3 className="font-bold text-amber-400 mb-3 uppercase text-xs tracking-wider">Como resolver (Vercel)</h3>
+               <ol className="list-decimal list-inside space-y-2 text-sm text-slate-300">
+                  <li>Vá para o painel do seu projeto no <strong>Vercel</strong>.</li>
+                  <li>Clique em <strong>Settings</strong> &gt; <strong>Environment Variables</strong>.</li>
+                  <li>Adicione uma nova variável:</li>
+                  <li className="pl-4 py-1">Key: <code className="bg-slate-950 px-2 py-0.5 rounded text-green-400">API_KEY</code></li>
+                  <li className="pl-4 py-1">Value: <em>(Sua chave da API do Google Gemini)</em></li>
+                  <li>Salve e faça um <strong>Redeploy</strong> do projeto.</li>
+               </ol>
+            </div>
+        </div>
+     );
+  }
+
   const handleGenerate = async () => {
     initializeAudio(); // Unlock audio context
     if (!topic) return;
@@ -120,7 +146,7 @@ export default function App() {
       });
 
     } catch (err) {
-      setError("Não foi possível gerar o plano de aula. Verifique sua conexão e tente novamente.");
+      setError("Não foi possível gerar o plano de aula. Verifique sua chave de API e conexão.");
     } finally {
       setLoading(false);
     }

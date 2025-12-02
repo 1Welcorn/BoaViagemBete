@@ -1,13 +1,27 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { Phrase } from "../types";
 
-// Ensure API Key is present
-const apiKey = process.env.API_KEY;
-if (!apiKey) {
-  console.error("API_KEY is missing from environment variables.");
-}
+// --- API KEY SAFE ACCESS ---
+// We use a safe getter to prevent "ReferenceError: process is not defined" 
+// which causes white screens in pure browser environments.
+const getApiKey = () => {
+  try {
+    // Check if process exists (Node/Build env) and has the key
+    if (typeof process !== "undefined" && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore errors if process is not defined
+  }
+  return "";
+};
 
-const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-for-ts-check' });
+const apiKey = getApiKey();
+// We allow initialization with a dummy key to prevent immediate crash, 
+// but we will flag it so the UI can warn the user.
+export const hasValidKey = !!apiKey && !apiKey.includes('dummy');
+
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key-for-init' });
 
 // --- AUDIO SYSTEM ---
 
@@ -42,6 +56,10 @@ export const initializeAudio = () => {
  * Generates a batch of phrases. 
  */
 export const generateEventPhrases = async (topic: string, level: string, sourceText?: string): Promise<Phrase[]> => {
+  if (!hasValidKey) {
+      throw new Error("API Key is missing. Please configure Vercel Environment Variables.");
+  }
+
   try {
     let prompt = "";
 
@@ -160,6 +178,8 @@ export const generateSpeech = (text: string, voiceName: string = 'Kore'): Promis
 
   // Create new promise
   const speechPromise = (async () => {
+    if (!hasValidKey) return null;
+    
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-preview-tts",
