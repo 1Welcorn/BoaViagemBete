@@ -1,0 +1,7 @@
+{
+  "name": "BoaViagemBete",
+  "description": "A targeted phrase-learning tool for Brazilian students preparing for specific international events. Features AI-generated curriculums, pronunciation practice, and listening drills.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
